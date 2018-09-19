@@ -17,6 +17,7 @@ public class MeshGenerator : MonoBehaviour {
         mesh_vertex = vertex;
         mesh_tris = new int[vertex.Length * 3];
         mesh_generated = new Mesh();
+        mesh_generated.name = "Mesh";
     }
    public Mesh GetMesh()
     {
@@ -28,9 +29,10 @@ public class MeshGenerator : MonoBehaviour {
         Triangulate();
         mesh_generated.RecalculateNormals();
         mesh_generated.RecalculateTangents();
+        
     }
 
-    private void AddCenter(Vector3 center)
+    private void AddCenter(Vector3 center) //Given a vertex center, It will be added to the last position of the vertices Array
     {
         Vector3[] vertices = new Vector3[mesh_vertex.Length + 1];
         int i = 0;
@@ -54,7 +56,7 @@ public class MeshGenerator : MonoBehaviour {
             {
                 //Debug.Log("v1x: " + vertices[y].x + " v2x: " + vertices[x].x);
                 //Debug.Log(Mathf.Abs(vertices[y].x - vertices[x].x));
-                if(Mathf.Abs(vertices[y].x-vertices[x].x)>maxLenghtx)
+                if(Mathf.Abs(vertices[y].x-vertices[x].x)>maxLenghtx) //Calculates the furthesh horizontal distance between two vertices
                 {
                     maxLenghtx = Mathf.Abs(vertices[y].x - vertices[x].x);
                     vertex1x = vertices[y].x;
@@ -62,7 +64,7 @@ public class MeshGenerator : MonoBehaviour {
                 }
                 //Debug.Log("v1y: " + vertices[y].y + " v2y: " + vertices[x].y);
                // Debug.Log(Mathf.Abs(vertices[y].y - vertices[x].y));
-                if (Mathf.Abs(vertices[y].y - vertices[x].y) > maxLenghty)
+                if (Mathf.Abs(vertices[y].y - vertices[x].y) > maxLenghty)//Calculates the furthesh vertical distance between two vertices
                 {
                     maxLenghty = Mathf.Abs(vertices[y].y - vertices[x].y);
                     vertex1y = vertices[y].y;
@@ -73,7 +75,8 @@ public class MeshGenerator : MonoBehaviour {
         Vector3 middley, middlex;
         middley = MathG.GetMiddlePoint(new Vector3(vertex1y, 0), new Vector3(vertex2y, 0));
         middlex = MathG.GetMiddlePoint(new Vector3(vertex1x, 0, 0), new Vector3(vertex2x, 0, 0));
-        Vector3 center = middlex + middley;
+
+        Vector3 center = middlex + middley; //The center vertex is the result of the Middle Point of the four vertices
         return center;
     }
     private void Triangulate()
@@ -89,13 +92,6 @@ public class MeshGenerator : MonoBehaviour {
         }
         mesh_generated.triangles = mesh_tris;
     }
-    private void GetCircumcenter()
-    {
-        Vector3 OA = mesh_vertex[0];
-        Vector3 OB = mesh_vertex[1];
-        Vector3 OC = mesh_vertex[2];
-
-
-    }
+   
     
 }
