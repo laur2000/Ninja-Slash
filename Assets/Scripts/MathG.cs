@@ -10,27 +10,40 @@ public class MathG : MonoBehaviour {
         return MiddlePoint;
     }
    
-    public static Vector3 GetPerpendicular(Vector3 normal, Vector3 Point)// Returns the parameters of the plane equation
+    public static Vector3 GetPlanePerpendicular(Vector3 normal, Vector3 Point)// Returns the parameters of the plane equation
     {
        
         float A, B, C;
         A = normal.x;
-        B = normal.y;
-        
+        B = normal.y;        
         C = -(A * Point.x )-(B * Point.y);
 
 
         return new Vector3(A, B, C);
     }
-    public static Vector3 LineIntersection(Vector3 line1,Vector3 line2) //Take two plane equations and makes the intersection between them
+    public static Vector3 GetLineEquation(Vector3 vectorDir, Vector3 Point)
     {
-        float x, y;
+        float A, B, C;
+        A = vectorDir.y;
+        B = -vectorDir.x;
+        C= -(A * Point.x) - (B * Point.y);
+        return new Vector3(A, B, C);
+    }
+    public static Vector3 TwoIcogniteEquation(Vector3 line1,Vector3 line2) //Take two plane equations and makes the intersection between them
+    {
+        float x, y,delta;
         //We apply cramer to resolve the two equations system
-
-        x = (line2.z*line1.y-line1.z*line2.y) / (line1.x*line2.y-line2.x*line1.y);
-        y = (line1.z * line2.x - line1.x * line2.z) / (line1.x * line2.y - line2.x * line1.y);
+        delta = CalculateMatrix(line1,line2);
+        x = (line2.z*line1.y-line1.z*line2.y) / delta;
+        y = (line1.z * line2.x - line1.x * line2.z) / delta;
 
         return new Vector3(x, y, 0);
+    }
+    public static float CalculateMatrix(Vector3 line1,Vector3 line2)
+    {
+        float delta;
+        delta = (line1.x * line2.y - line2.x * line1.y);
+        return delta;
     }
    
 
