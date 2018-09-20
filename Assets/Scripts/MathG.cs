@@ -22,13 +22,7 @@ public class Segment
     public Segment(Vector3 line, int indexOne, int IndexTwo)
     {
         segment = line;
-        int aux = 0;
-        if(indexOne>IndexTwo)
-        {
-            aux = IndexTwo;
-            IndexTwo = indexOne;
-            indexOne = aux;
-        }
+        
         index1 = indexOne;
         index2 = IndexTwo;
         isSelected = false;
@@ -44,15 +38,13 @@ public class Segment
     public void SetSegment(Vector3 v1, Vector3 v2)
     {
         Vector3 aux = new Vector3();
-        int auxInd = 0;
+        
         if (v1.x > v2.x)
         {
             aux = v2;
             v2 = v1;
             v1 = aux;
-            auxInd = index2;
-            index2 = index1;
-            index1 = auxInd;
+            
         }
         vertex1 = v1;
         vertex2 = v2;
@@ -84,25 +76,13 @@ public class Segment
     }
     public void SetIndex12(int ind1,int ind2)
     {
-        int aux = 0;
-        if(ind1>ind2)
-        {
-            aux = ind2;
-            ind2 = ind1;
-            ind1 = aux;
-        }
+        
         index1 = ind1;
         index2 = ind2;
     }
     public void SetIndex34(int ind3, int ind4)
     {
-        int aux = 0;
-        if (ind3 > ind4)
-        {
-            aux = ind4;
-            ind4= ind3;
-            ind3= aux;
-        }
+        
         index3 = ind3;
         index4 = ind4;
     }
@@ -118,15 +98,12 @@ public class MathG : MonoBehaviour {
     }
    
     public static Vector4 GetPlanePerpendicular(Vector3 normal, Vector3 Point)// Returns the parameters of the plane equation
-    {
-       
+    {       
         float A, B, C,D;
         A = normal.x;
         B = normal.y;
         C = normal.z;
         D = -(A * Point.x) - (B * Point.y) - (C * Point.z);
-
-
 
         return new Vector4(A, B, C,D);
     }
@@ -177,7 +154,16 @@ public class MathG : MonoBehaviour {
         delta = ((line1.x * line2.y) - (line2.x * line1.y));
         return delta;
     }
-   
+    public static float PointNotContainedInLine(Vector3 line,Vector3 Point)
+    {
+        float error = line.x * Point.x + line.y * Point.y + line.z;
+        /*if((-line.x)/line.y<0)
+        {
+            error = -error;
+        }
+        */
+        return error;
+    }
     public static bool LineContains(Vector3 line,Vector3 Point) 
     {
         //Function that calculates if a point is aproximately contained in a line

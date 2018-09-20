@@ -52,49 +52,54 @@ public class ObjectMeshController : MonoBehaviour {
             trail.gameObject.SetActive(true);
         }
         
-        if(Input.GetMouseButton(0) && !isFinished)
+        if(Input.GetMouseButton(0))
         {
-            
-                vertexButtonTwo = GetMousePositionToWorld();
-            trail.transform.position = vertexButtonTwo-new Vector3(0,0,+0.1f);
-                segmentPlayer.SetSegment(vertexButtonTwo, vertexButtonOne);          
-          
-
-
-
-            Vector3 intersection=DetectIntersection(segmentPlayer, form);
-            if(intersection!=new Vector3())
+            vertexButtonTwo = GetMousePositionToWorld();
+            trail.transform.position = vertexButtonTwo - new Vector3(0, 0, +0.1f);
+            if (!isFinished)
             {
                 
-                vertexButtonOne = intersection;
                 segmentPlayer.SetSegment(vertexButtonTwo, vertexButtonOne);
-                // Debug.Log(intersection + " with segments " + segmentPlayer.index1 + " and " + segmentPlayer.index2);
-                // This is the representation of the player segment, use of Debug purpose
-                //Debug.Log("The player segment has touched the segment at " + intersection + " of the " + segmentPlayer.index1 + " " + segmentPlayer.index2 + " segment");                
 
-                segmentPlayer.isSelected = !segmentPlayer.isSelected; //Mark this segment as selected to exit the loop
-                if (!segmentPlayer.isSelected)
+
+
+
+                Vector3 intersection = DetectIntersection(segmentPlayer, form);
+                if (intersection != new Vector3())
                 {
-                    
-                    for (float x = -3; x < 3; x += 0.1f)
+
+                    vertexButtonOne = intersection;
+                    segmentPlayer.SetSegment(vertexButtonTwo, vertexButtonOne);
+                    // Debug.Log(intersection + " with segments " + segmentPlayer.index1 + " and " + segmentPlayer.index2);
+                    // This is the representation of the player segment, use of Debug purpose
+                    //Debug.Log("The player segment has touched the segment at " + intersection + " of the " + segmentPlayer.index1 + " " + segmentPlayer.index2 + " segment");                
+
+                    segmentPlayer.isSelected = !segmentPlayer.isSelected; //Mark this segment as selected to exit the loop
+                    if (!segmentPlayer.isSelected)
                     {
-                        if (segmentPlayer.Getfx(x) != -Mathf.Infinity && segmentPlayer.Getfx(x) != Mathf.Infinity)
+
+                        for (float x = -3; x < 3; x += 0.1f)
                         {
+                            if (segmentPlayer.Getfx(x) != -Mathf.Infinity && segmentPlayer.Getfx(x) != Mathf.Infinity)
+                            {
 
 
-                            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                            go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                                GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                                go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
 
-                            go.transform.position = new Vector3(x, segmentPlayer.Getfx(x), 0);
+                                go.transform.position = new Vector3(x, segmentPlayer.Getfx(x), 0);
 
+                            }
                         }
-                    }
-                    Debug.Log("We have cut the segment " + segmentPlayer.index1 + segmentPlayer.index2 + " and the segment " + segmentPlayer.index3 + segmentPlayer.index4);
-                    isFinished = true;
-                }             
-                
+                        Debug.Log("We have cut the segment " + segmentPlayer.index1 + segmentPlayer.index2 + " and the segment " + segmentPlayer.index3 + segmentPlayer.index4);
+                        RecalculateVerticesWithSegment(segmentPlayer,form);
+                        isFinished = true;
 
-            } 
+                    }
+
+
+                }
+            }
           
 
         }
@@ -116,6 +121,32 @@ public class ObjectMeshController : MonoBehaviour {
         return point;
     }
 
+    private Vector3[] RecalculateVerticesWithSegment(Segment segment, Vector3[] vertices)
+    {
+        int longitud = 0;
+        Vector3[] vertArray = new Vector3[2];
+        if(MathG.PointNotContainedInLine(segment.GetSegment(),vertices[0])>=0)
+        {
+           for(int i= segment.index2; i<=segment.index3;i++,longitud++)
+            {                
+            }
+        }
+        else
+        {
+            for (int i = segment.index1; i >= segment.index4; i--, longitud++)
+            {
+            }
+        }
+        if(vertices.Length-longitud<longitud)
+        {
+            longitud = vertices.Length - longitud;
+        }
+
+
+
+        Debug.Log("Vertices: " + longitud);
+        return vertArray;
+    }
     private Vector3 DetectIntersection(Segment segment, Vector3[] vertices)
     {
         //This function takes a segment of the space and goes through the Array of Vertex
@@ -133,8 +164,10 @@ public class ObjectMeshController : MonoBehaviour {
             }
           else
             {
-                index1 = i + 1;
-                index2 = i;
+                
+                index1 = i;
+                index2 = i+1;
+                
             }
             
                 side = new Segment();
@@ -203,13 +236,13 @@ public class ObjectMeshController : MonoBehaviour {
        
    
     }
-    [SerializeField]
-    MeshFilter quadMesh;
+   
+
     void GenerateMesh() // Use the MeshGenerator Class in order to calculate the mesh given an array of vertices
     {
-        MeshGenerator meshGenerator = new MeshGenerator(form);
-        meshGenerator.GenerateMesh();
-        quadMesh.mesh = meshGenerator.GetMesh();
+       // MeshGenerator meshGenerator = new MeshGenerator(form);
+       // meshGenerator.GenerateMesh();
+       // quadMesh.mesh = meshGenerator.GetMesh();
        
     }
 
