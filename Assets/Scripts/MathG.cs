@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 public class Segment
 {
-    Vector3 segment;
-    public Vector3 vertex1, vertex2;
-    public int index1, index2;
-    public bool isSelected;
+    Vector3 segment; //A vector3 that stores A, B, C from a lineal equation Ax+By+C=0
+    public Vector3 vertex1, vertex2; //Two vertices that limits the segment
+    public int index1, index2; //The index of the vertices
+    public bool isSelected; //A boolean that check if this segment has already been intersected with other segment
     public Segment()
     {
         segment = new Vector3();
@@ -33,11 +33,15 @@ public class Segment
     public void SetSegment(Vector3 v1, Vector3 v2)
     {
         Vector3 aux = new Vector3();
+        int auxInd = 0;
         if (v1.x > v2.x)
         {
             aux = v2;
             v2 = v1;
             v1 = aux;
+            auxInd = index2;
+            index2 = index1;
+            index1 = auxInd;
         }
         vertex1 = v1;
         vertex2 = v2;
@@ -49,6 +53,7 @@ public class Segment
     }
     public void SetVertexTwo(Vector3 vertex)
     {
+        //This function sort the vertices from smaller to bigger
         vertex2 = vertex;
         Vector3 aux = new Vector3();
         if (vertex1.x > vertex2.x)
@@ -58,8 +63,10 @@ public class Segment
             vertex1 = aux;
         }
     }
+
     public float Getfx(float x)
     {
+        //This is the f(x) form of the equation
         float y = 0;
         y=(-segment.x*x-segment.z)/segment.y;
         return y;
@@ -76,19 +83,23 @@ public class MathG : MonoBehaviour {
         return MiddlePoint;
     }
    
-    public static Vector3 GetPlanePerpendicular(Vector3 normal, Vector3 Point)// Returns the parameters of the plane equation
+    public static Vector4 GetPlanePerpendicular(Vector3 normal, Vector3 Point)// Returns the parameters of the plane equation
     {
        
-        float A, B, C;
+        float A, B, C,D;
         A = normal.x;
-        B = normal.y;        
-        C = -(A * Point.x )-(B * Point.y);
+        B = normal.y;
+        C = normal.z;
+        D = -(A * Point.x) - (B * Point.y) - (C * Point.z);
 
-        
-        return new Vector3(A, B, C);
+
+
+        return new Vector4(A, B, C,D);
     }
     public static Vector3 GetLineEquation(Vector3 vectorDir, Vector3 Point)
     {
+        //Given a director vector and a point it calculates the general equation of a lineal equation of this given form Ax+By+C=0
+        //Where A=v2 B=-v1 and they are stored in a vector3 (A,B,C)
         float A, B, C;
         A = vectorDir.y;
         B = -vectorDir.x;
@@ -111,11 +122,12 @@ public class MathG : MonoBehaviour {
         float x, y, delta;
         Vector3 line1=segment1.GetSegment();
         Vector3 line2=segment2.GetSegment();
+
         //We apply cramer to resolve the two equations system
         delta = CalculateMatrix(line1, line2);
         x = ((line1.z*line2.y)-(line2.z*line1.y))/ delta;
         y = ((line1.x*line2.z)-(line2.x*line1.z))/ delta;
-        if(-x>=segment1.vertex1.x && -x<=segment1.vertex2.x)
+        if((-x>=segment1.vertex1.x && -x<=segment1.vertex2.x) && (-x >= segment2.vertex1.x && -x <= segment2.vertex2.x))
         {
             
             return new Vector3(-x, -y, 0);
@@ -132,9 +144,9 @@ public class MathG : MonoBehaviour {
         return delta;
     }
    
-    public static bool LineContains(Vector3 line,Vector3 Point)
+    public static bool LineContains(Vector3 line,Vector3 Point) 
     {
-        //
+        //Function that calculates if a point is aproximately contained in a line
         bool isContained = false;
         if((line.x*Point.x+line.y*Point.y+line.z)>-0.2f && (line.x * Point.x + line.y * Point.y + line.z)< 0.2f)
         {
@@ -144,6 +156,10 @@ public class MathG : MonoBehaviour {
     }
     public static bool SegmentContains(Vector3 line, Vector3 Vertex1, Vector3 Vertex2, Vector3 Point)
     {
+        /*
+         * This function works like the LineContains, with the difference that the segment is now limited by two vertices
+         * and the point is only calculated between them
+         */ 
         bool isContained = false;
         Vector3 aux = new Vector3();
         if(Vertex1.x>Vertex2.x)

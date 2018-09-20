@@ -17,32 +17,12 @@ public class ObjectMeshController : MonoBehaviour {
     private void Start()
     {
         SetLineForm(0);
-        //GenerateMesh();
+        GenerateMesh();
         cam = Camera.main;
     }
     private void Update()
     {
-        /* This function is one-solution checking if one segment contains the cursor point
-        if (firstIntersection)
-        {
-            firstSegment = DetectIntersection(GetMousePositionToWorld(), form);
-            if (firstSegment.GetSegment() != new Vector3() && secondSegment.vertex1 != firstSegment.vertex1 && secondSegment.vertex1 != firstSegment.vertex2 && secondSegment.vertex2 != firstSegment.vertex1 && secondSegment.vertex2 != firstSegment.vertex2)
-            {
-                Debug.Log("Intersection one");
-                firstIntersection = false;
-            }
-        }
-        else
-        {
-            secondSegment = DetectIntersection(GetMousePositionToWorld(), form);
-            if(secondSegment.GetSegment() !=new Vector3() && secondSegment.vertex1!=firstSegment.vertex1 && secondSegment.vertex1 != firstSegment.vertex2 && secondSegment.vertex2 != firstSegment.vertex1 && secondSegment.vertex2 != firstSegment.vertex2)
-            {
-                Debug.Log("Intersection two");
-                firstIntersection = true;
-            }
-        }
-        */
-
+       
         OnPlayerMouseDown();
      
        
@@ -55,37 +35,52 @@ public class ObjectMeshController : MonoBehaviour {
        
         if (Input.GetMouseButtonDown(0))
         {
-           
-           
-           
-            segmentPlayer.isSelected = false;
-            vertexButtonOne = GetMousePositionToWorld();
+
             
+            vertexButtonOne = GetMousePositionToWorld();            
         }
+
         if(Input.GetMouseButton(0) && !segmentPlayer.isSelected)
         {
             vertexButtonTwo = GetMousePositionToWorld();
-            // Debug.Log(vertex1 + " " + vertex2);
+            
            
                 segmentPlayer.SetSegment(vertexButtonTwo, vertexButtonOne);
-            /* Cast ray line
-            for(float x=-3;x<3;x+=0.1f)
+
+           //Cast ray line of the mouse segment
+           
+            
+          
+
+            Vector3 intersection=DetectIntersection(segmentPlayer, form);
+            if(intersection!=new Vector3())
             {
-                GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-                go.transform.position = new Vector3(x,segmentPlayer.Getfx(x),0);
+                segmentPlayer.isSelected = true; //Mark this segment as selected to exit the loop
+                /*
+                 * This is the representation of the player segment, use of Debug purpose
+                Debug.Log("The player segment has touched the segment at " + intersection + " of the " + segmentPlayer.index1 + " " + segmentPlayer.index2 + " segment");                
+                
+                    for (float x = -3; x < 3; x += 0.1f)
+                    {
+                        if (segmentPlayer.Getfx(x)!=-Mathf.Infinity && segmentPlayer.Getfx(x) != Mathf.Infinity)
+                        {
+                        
+                        
+                        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
 
+                        go.transform.position = new Vector3(x, segmentPlayer.Getfx(x), 0);
+                        
+                        }
+                    }
+                */
             }
-            */
-            //Debug.Log(segmentPlayer.GetSegment());
-
-            DetectIntersection(segmentPlayer, form);
-            Debug.Log(segmentPlayer.vertex1 + " " + segmentPlayer.vertex2);
+            
 
         }
         if (Input.GetMouseButtonUp(0))
         {
-            segmentPlayer.isSelected = false;
+            segmentPlayer = new Segment();
         }
        
     }
@@ -110,14 +105,15 @@ public class ObjectMeshController : MonoBehaviour {
         Vector3 line = new Vector3();
         Vector3 intersection = new Vector3();
         Segment side = new Segment();
-        for (int i = vertices.Length-1; i > 0; i--)
+        for (int i = 0; i <vertices.Length-1; i++)
         {
             
-            line = MathG.GetLineEquation(vertices[i - 1]- vertices[i], vertices[i]);
+         
             side = new Segment();
-            side.SetSegment(line);
-            side.index1 = i;
-            side.index2 = i - 1;
+            side.index1 = i + 1;
+            side.index2 = i;
+            side.SetSegment(vertices[i+1],vertices[i]);
+            
            // Debug.Log(vertices[i] + " "+ vertices[i + 1]);
            intersection = MathG.IntersectionTwoSegments(segment, side);
          
@@ -126,14 +122,17 @@ public class ObjectMeshController : MonoBehaviour {
                 
                 segment.index1 = side.index1;
                 segment.index2 = side.index2;
-               // Debug.Log("Intersection "+intersection+" with segment " + segment.index1 + " and " + segment.index2);
+                // Debug.Log("Intersection "+intersection+" with segment " + segment.index1 + " and " + segment.index2);
+                return intersection;
+               /* Visual demostration of the intersection points
                 GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
                 go.transform.position = intersection;
+                */
             }
         }
        
-        return intersection;
+        return new Vector3();
     }
 
     void OnGUI()
@@ -169,12 +168,13 @@ public class ObjectMeshController : MonoBehaviour {
        
    
     }
-
+    [SerializeField]
+    MeshFilter quadMesh;
     void GenerateMesh() // Use the MeshGenerator Class in order to calculate the mesh given an array of vertices
     {
         MeshGenerator meshGenerator = new MeshGenerator(form);
         meshGenerator.GenerateMesh();
-        GetComponent<MeshFilter>().mesh = meshGenerator.GetMesh();
+        quadMesh.mesh = meshGenerator.GetMesh();
        
     }
 
