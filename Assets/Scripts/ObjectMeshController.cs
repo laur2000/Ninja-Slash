@@ -7,7 +7,8 @@ public class ObjectMeshController : MonoBehaviour {
     LineRenderer line;
     Vector3[] form;
     Segment segmentPlayer=new Segment();
-    
+    [SerializeField]
+    Transform trail;
     bool firstIntersection = true;
     private void Awake()
     {
@@ -17,7 +18,7 @@ public class ObjectMeshController : MonoBehaviour {
     private void Start()
     {
         HexCoor formFunction = new HexCoor(0);
-
+        trail.gameObject.SetActive(false);
         form = formFunction.GetForm(); //Stores the vertices of the polygon
 
         SetLineForm(form);//Passes the form with the vertices to the Line Renderer
@@ -34,20 +35,28 @@ public class ObjectMeshController : MonoBehaviour {
     private Camera cam;
     Vector3 vertexButtonOne = new Vector3(), vertexButtonTwo = new Vector3();
     bool isFinished = false;
+   
     private void OnPlayerMouseDown()
     {
-        
+        if (Input.GetMouseButtonUp(0))
+        {
+            trail.gameObject.SetActive(false);
+           
+        }
         if (Input.GetMouseButtonDown(0))
         {
             segmentPlayer = new Segment();
             isFinished = false;
-            vertexButtonOne = GetMousePositionToWorld();            
+            vertexButtonOne = GetMousePositionToWorld();
+            trail.transform.position = vertexButtonOne;
+            trail.gameObject.SetActive(true);
         }
-
+        
         if(Input.GetMouseButton(0) && !isFinished)
         {
             
                 vertexButtonTwo = GetMousePositionToWorld();
+            trail.transform.position = vertexButtonTwo-new Vector3(0,0,+0.1f);
                 segmentPlayer.SetSegment(vertexButtonTwo, vertexButtonOne);          
           
 
@@ -56,6 +65,7 @@ public class ObjectMeshController : MonoBehaviour {
             Vector3 intersection=DetectIntersection(segmentPlayer, form);
             if(intersection!=new Vector3())
             {
+                
                 vertexButtonOne = intersection;
                 segmentPlayer.SetSegment(vertexButtonTwo, vertexButtonOne);
                 // Debug.Log(intersection + " with segments " + segmentPlayer.index1 + " and " + segmentPlayer.index2);
@@ -84,7 +94,8 @@ public class ObjectMeshController : MonoBehaviour {
                 }             
                 
 
-            }          
+            } 
+          
 
         }
 
@@ -112,16 +123,27 @@ public class ObjectMeshController : MonoBehaviour {
         
         Vector3 intersection = new Vector3();
         Segment side = new Segment();
-        for (int i = 0; i <vertices.Length-1; i++)
+        int index1 = 0, index2 = 0;
+        for (int i = 0; i <vertices.Length; i++)
         {
-
+          if(i==vertices.Length-1)//Checks if it's the last vertex form the array, and assigns to the second index the initial vertex 
+            {
+                index1 = i;
+                index2 = 0;
+            }
+          else
+            {
+                index1 = i + 1;
+                index2 = i;
+            }
             
                 side = new Segment();
-                side.index1 = i + 1;
-                side.index2 = i;
-            if (((segment.index1 != side.index1 && segment.index2 != side.index1) || (segment.index1 != side.index2 && segment.index2 != side.index2))) //Check if the segmentPlayer is not the same as the sidePlayer
+                side.index1 = index1;
+                side.index2 = index2;
+            //Check if the segmentPlayer is not the same as the sidePlayer
+            if (((segment.index1 != side.index1 && segment.index2 != side.index1) || (segment.index1 != side.index2 && segment.index2 != side.index2))) 
             {
-                side.SetSegment(vertices[i + 1], vertices[i]);
+                side.SetSegment(vertices[index1], vertices[index2]);
 
                 // Debug.Log(vertices[i] + " "+ vertices[i + 1]);
                 intersection = MathG.IntersectionTwoSegments(segment, side);

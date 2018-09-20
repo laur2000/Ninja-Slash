@@ -18,7 +18,7 @@ public class HexCoor{
         {
             case 0:
                 {
-                    corners = new Vector3[7];
+                    corners = new Vector3[6];
                     
                     corners[0] = new Vector3(outerRadius*2, 0, 0);
                     corners[1] = new Vector3(outerRadius * 0.5f, -innerRadius, 0);
@@ -26,14 +26,14 @@ public class HexCoor{
                     corners[3] = new Vector3(-outerRadius, 0, 0);
                     corners[4] = new Vector3(-outerRadius * 0.5f, innerRadius, 0);
                     corners[5] = new Vector3(outerRadius * 0.5f, innerRadius, 0);
-                    corners[6] = new Vector3(outerRadius*2, 0, 0);
+                    //corners[6] = new Vector3(outerRadius*2, 0, 0);
 
                    
                 }
                 break;
             case 1:
                 {
-                    corners = new Vector3[7];
+                    corners = new Vector3[6];
 
                     corners[0] = new Vector3(1 * 2, 0, 0);
                     corners[1] = new Vector3(2 * 0.5f, -2, 0);
@@ -41,7 +41,7 @@ public class HexCoor{
                     corners[3] = new Vector3(-outerRadius, 4, 0);
                     corners[4] = new Vector3(-2 * 0.5f, innerRadius, 0);
                     corners[5] = new Vector3(3 * 0.5f, 8, 0);
-                    corners[6] = new Vector3(1 * 2, 0, 0);
+                 
                 }
                 break;
         }
