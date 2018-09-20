@@ -16,8 +16,12 @@ public class ObjectMeshController : MonoBehaviour {
     }
     private void Start()
     {
-        SetLineForm(0);
-        GenerateMesh();
+        HexCoor formFunction = new HexCoor(0);
+
+        form = formFunction.GetForm(); //Stores the vertices of the polygon
+
+        SetLineForm(form);//Passes the form with the vertices to the Line Renderer
+        //GenerateMesh();
         cam = Camera.main;
     }
     private void Update()
@@ -29,59 +33,62 @@ public class ObjectMeshController : MonoBehaviour {
     }
     private Camera cam;
     Vector3 vertexButtonOne = new Vector3(), vertexButtonTwo = new Vector3();
-   
+    bool isFinished = false;
     private void OnPlayerMouseDown()
     {
-       
+        
         if (Input.GetMouseButtonDown(0))
         {
-
-            
+            segmentPlayer = new Segment();
+            isFinished = false;
             vertexButtonOne = GetMousePositionToWorld();            
         }
 
-        if(Input.GetMouseButton(0) && !segmentPlayer.isSelected)
+        if(Input.GetMouseButton(0) && !isFinished)
         {
-            vertexButtonTwo = GetMousePositionToWorld();
             
-           
-                segmentPlayer.SetSegment(vertexButtonTwo, vertexButtonOne);
-
-           //Cast ray line of the mouse segment
-           
-            
+                vertexButtonTwo = GetMousePositionToWorld();
+                segmentPlayer.SetSegment(vertexButtonTwo, vertexButtonOne);          
           
+
+
 
             Vector3 intersection=DetectIntersection(segmentPlayer, form);
             if(intersection!=new Vector3())
             {
-                segmentPlayer.isSelected = true; //Mark this segment as selected to exit the loop
-                /*
-                 * This is the representation of the player segment, use of Debug purpose
-                Debug.Log("The player segment has touched the segment at " + intersection + " of the " + segmentPlayer.index1 + " " + segmentPlayer.index2 + " segment");                
-                
+                vertexButtonOne = intersection;
+                segmentPlayer.SetSegment(vertexButtonTwo, vertexButtonOne);
+                // Debug.Log(intersection + " with segments " + segmentPlayer.index1 + " and " + segmentPlayer.index2);
+                // This is the representation of the player segment, use of Debug purpose
+                //Debug.Log("The player segment has touched the segment at " + intersection + " of the " + segmentPlayer.index1 + " " + segmentPlayer.index2 + " segment");                
+
+                segmentPlayer.isSelected = !segmentPlayer.isSelected; //Mark this segment as selected to exit the loop
+                if (!segmentPlayer.isSelected)
+                {
+                    
                     for (float x = -3; x < 3; x += 0.1f)
                     {
-                        if (segmentPlayer.Getfx(x)!=-Mathf.Infinity && segmentPlayer.Getfx(x) != Mathf.Infinity)
+                        if (segmentPlayer.Getfx(x) != -Mathf.Infinity && segmentPlayer.Getfx(x) != Mathf.Infinity)
                         {
-                        
-                        
-                        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                        go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
 
-                        go.transform.position = new Vector3(x, segmentPlayer.Getfx(x), 0);
-                        
+
+                            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                            go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+
+                            go.transform.position = new Vector3(x, segmentPlayer.Getfx(x), 0);
+
                         }
                     }
-                */
-            }
-            
+                    Debug.Log("We have cut the segment " + segmentPlayer.index1 + segmentPlayer.index2 + " and the segment " + segmentPlayer.index3 + segmentPlayer.index4);
+                    isFinished = true;
+                }             
+                
+
+            }          
 
         }
-        if (Input.GetMouseButtonUp(0))
-        {
-            segmentPlayer = new Segment();
-        }
+
+       
        
     }
     private Vector3 GetMousePositionToWorld()
@@ -102,33 +109,41 @@ public class ObjectMeshController : MonoBehaviour {
     {
         //This function takes a segment of the space and goes through the Array of Vertex
         //creating segments and calculates the intersection 
-        Vector3 line = new Vector3();
+        
         Vector3 intersection = new Vector3();
         Segment side = new Segment();
         for (int i = 0; i <vertices.Length-1; i++)
         {
+
             
-         
-            side = new Segment();
-            side.index1 = i + 1;
-            side.index2 = i;
-            side.SetSegment(vertices[i+1],vertices[i]);
-            
-           // Debug.Log(vertices[i] + " "+ vertices[i + 1]);
-           intersection = MathG.IntersectionTwoSegments(segment, side);
-         
-            if (intersection!=new Vector3())
+                side = new Segment();
+                side.index1 = i + 1;
+                side.index2 = i;
+            if (((segment.index1 != side.index1 && segment.index2 != side.index1) || (segment.index1 != side.index2 && segment.index2 != side.index2))) //Check if the segmentPlayer is not the same as the sidePlayer
             {
-                
-                segment.index1 = side.index1;
-                segment.index2 = side.index2;
-                // Debug.Log("Intersection "+intersection+" with segment " + segment.index1 + " and " + segment.index2);
-                return intersection;
-               /* Visual demostration of the intersection points
-                GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-                go.transform.position = intersection;
-                */
+                side.SetSegment(vertices[i + 1], vertices[i]);
+
+                // Debug.Log(vertices[i] + " "+ vertices[i + 1]);
+                intersection = MathG.IntersectionTwoSegments(segment, side);
+
+                if (intersection != new Vector3()  )
+                {
+                    if (!segment.isSelected) //If it's the first intersection it assigns the index of the vertices to index 1 and 2
+                    {
+                        segment.SetIndex12(side.index1, side.index2);
+                    }
+                    else//If it's the second intersection it assigns the index of the vertices to index 3 and 4
+                    {
+                        segment.SetIndex34(side.index1, side.index2);
+                    }
+                    // Debug.Log("Intersection "+intersection+" with segment " + segment.index1 + " and " + segment.index2);
+                    return intersection;
+                    /* Visual demostration of the intersection points
+                     GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                     go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                     go.transform.position = intersection;
+                     */
+                }
             }
         }
        
@@ -157,14 +172,12 @@ public class ObjectMeshController : MonoBehaviour {
         GUILayout.EndArea();
     }
 
-    void SetLineForm(int index) //Gets an index and select the shape of the polygon from the class
+    void SetLineForm(Vector3[] vertices) //Gets an index and select the shape of the polygon from the class
     {
-        HexCoor formFunction = new HexCoor(index);
+       
 
-        form = formFunction.GetForm(); //Stores the vertices of the polygon
-
-        line.positionCount = form.Length;
-        line.SetPositions(form); //Generates the outline of the polygon with the given vertices
+        line.positionCount = vertices.Length;
+        line.SetPositions(vertices); //Generates the outline of the polygon with the given vertices
        
    
     }
