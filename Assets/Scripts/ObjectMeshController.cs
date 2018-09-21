@@ -20,7 +20,7 @@ public class ObjectMeshController : MonoBehaviour {
         HexCoor formFunction = new HexCoor(0);
         trail.gameObject.SetActive(false);
         form = formFunction.GetForm(); //Stores the vertices of the polygon
-
+       
         SetLineForm(form);//Passes the form with the vertices to the Line Renderer
         //GenerateMesh();
         cam = Camera.main;
@@ -48,6 +48,7 @@ public class ObjectMeshController : MonoBehaviour {
             segmentPlayer = new Segment();
             isFinished = false;
             vertexButtonOne = GetMousePositionToWorld();
+            vertexButtonTwo = vertexButtonOne;
             trail.transform.position = vertexButtonOne;
             trail.gameObject.SetActive(true);
         }
@@ -59,25 +60,37 @@ public class ObjectMeshController : MonoBehaviour {
             if (!isFinished)
             {
                 
-                segmentPlayer.SetSegment(vertexButtonTwo, vertexButtonOne);
+                segmentPlayer.SetSegment(vertexButtonOne,vertexButtonTwo );
 
 
 
-
+                
                 Vector3 intersection = DetectIntersection(segmentPlayer, form);
-                if (intersection != new Vector3())
+                if (intersection != new Vector3() && (Mathf.Infinity!=segmentPlayer.Getfx(intersection.x) && Mathf.NegativeInfinity != segmentPlayer.Getfx(intersection.x)))
                 {
+                    if(!segmentPlayer.isSelected)
+                    {
 
-                    vertexButtonOne = intersection;
-                    segmentPlayer.SetSegment(vertexButtonTwo, vertexButtonOne);
+                        vertexButtonOne = intersection;
+                        segmentPlayer.SetVertexOne(intersection);
+                    }
+                    else
+                    {
+                        
+                        segmentPlayer.SetSegment(segmentPlayer.vertex1, segmentPlayer.vertex2);
+                        segmentPlayer.SetVertexTwo(intersection);
+
+                    }
+                    
                     // Debug.Log(intersection + " with segments " + segmentPlayer.index1 + " and " + segmentPlayer.index2);
                     // This is the representation of the player segment, use of Debug purpose
-                    //Debug.Log("The player segment has touched the segment at " + intersection + " of the " + segmentPlayer.index1 + " " + segmentPlayer.index2 + " segment");                
+                    // Debug.Log("The player segment has touched the segment at " + intersection + " of the " + segmentPlayer.index1 + " " + segmentPlayer.index2 + " segment");                
 
                     segmentPlayer.isSelected = !segmentPlayer.isSelected; //Mark this segment as selected to exit the loop
                     if (!segmentPlayer.isSelected)
                     {
-
+                        /*
+                         * This draw the line of the segment cut. Use for debug purpose
                         for (float x = -3; x < 3; x += 0.1f)
                         {
                             if (segmentPlayer.Getfx(x) != -Mathf.Infinity && segmentPlayer.Getfx(x) != Mathf.Infinity)
@@ -91,8 +104,11 @@ public class ObjectMeshController : MonoBehaviour {
 
                             }
                         }
-                        Debug.Log("We have cut the segment " + segmentPlayer.index1 + segmentPlayer.index2 + " and the segment " + segmentPlayer.index3 + segmentPlayer.index4);
-                        RecalculateVerticesWithSegment(segmentPlayer,form);
+                        */
+                        // Debug.Log("We have cut the segment " + segmentPlayer.index1 + segmentPlayer.index2 + " and the segment " + segmentPlayer.index3 + segmentPlayer.index4);
+                        form = RecalculateVerticesWithSegment(segmentPlayer, form);
+                        SetLineForm(form);
+                       
                         isFinished = true;
 
                     }
@@ -121,31 +137,105 @@ public class ObjectMeshController : MonoBehaviour {
         return point;
     }
 
+    
     private Vector3[] RecalculateVerticesWithSegment(Segment segment, Vector3[] vertices)
     {
         int longitud = 0;
-        Vector3[] vertArray = new Vector3[2];
-        if(MathG.PointNotContainedInLine(segment.GetSegment(),vertices[0])>=0)
-        {
-           for(int i= segment.index2; i<=segment.index3;i++,longitud++)
-            {                
-            }
-        }
-        else
-        {
-            for (int i = segment.index1; i >= segment.index4; i--, longitud++)
+        ArrayList vertArray = new ArrayList();
+
+        Vector3[] array1 = new Vector3[0], array2 = new Vector3[0];
+        Vector3 dir = segment.dir;
+        Debug.Log(dir + " v1: " + segment.vertex1 + " v2: " + segment.vertex2);
+        Debug.Log("Vert1: " + segment.index1 + segment.index2 + " Vert2: " + segment.index3 + segment.index4);
+       
+            if (MathG.PointNotContainedInLine(segment.GetSegment(), vertices[0]) >= 0) //Check if the vertex[0] is at the left or at the right of the segment
             {
+                if (dir.x >= 0) //Checks if the director vector is positive or negative
+                {
+                    for (int i = segment.index2; i <= segment.index3; i++, longitud++)
+                    {
+
+                    }
+                }
+                else
+                {
+                    for (int i = segment.index1; i >= segment.index4; i--, longitud++)
+                    {
+
+                    }
+                }
+
+                if (dir.x >= 0)
+                {
+                    Debug.Log(" Pendiente positiva, 0 derecha, vector positivo: ");
+                    array1 = new Vector3[longitud + 2];
+                    array1[0] = segment.vec1;
+                    array1[array1.Length - 1] = segment.vec2;
+                    for (int i = segment.index2, j = 1; j < (array1.Length - 1); i++, j++)
+                    {
+                        array1[j] = vertices[i];
+                    }
+                }
+                else
+                {
+                    Debug.Log(" Pendiente positiva, 0 derecha, vector negativo: ");
+                    array1 = new Vector3[longitud + 2];
+                    array1[0] = segment.vec2;
+                    array1[array1.Length - 1] = segment.vec1;
+                    for (int i = segment.index4, j = 1; j < (array1.Length - 1); i++, j++)
+                    {
+                        array1[j] = vertices[i];
+                    }
+                }
+
+
+
             }
-        }
-        if(vertices.Length-longitud<longitud)
-        {
-            longitud = vertices.Length - longitud;
-        }
+            else
+            {
 
+                if (dir.x < 0)
+                {
+                    for (int i = segment.index2; i <= segment.index3; i++, longitud++)
+                    {
 
+                    }
+                }
+                else
+                {
+                    for (int i = segment.index1; i >= segment.index4; i--, longitud++)
+                    {
 
-        Debug.Log("Vertices: " + longitud);
-        return vertArray;
+                    }
+                }
+                if (dir.x >= 0)
+                {
+                    Debug.Log(" Pendiente Positiva, 0 izquierda, vector positivo: ");
+                    array1 = new Vector3[longitud + 2];
+                    array1[0] = segment.vec2;
+                    array1[array1.Length - 1] = segment.vec1;
+                    for (int i = segment.index4, j = 1; j < (array1.Length - 1); i++, j++)
+                    {
+                        array1[j] = vertices[i];
+                    }
+                }
+                else
+                {
+                    Debug.Log(" Pendiente Positiva, 0 izquierda, vector negativo: ");
+                    array1 = new Vector3[longitud + 2];
+                    array1[0] = segment.vec1;
+                    array1[array1.Length - 1] = segment.vec2;
+                    for (int i = segment.index2, j = 1; j < (array1.Length - 1); i++, j++)
+                    {
+                        array1[j] = vertices[i];
+                    }
+                }
+            }
+        
+      
+
+        //Debug.Log("Vertices: " + longitud);
+        return array1;
     }
     private Vector3 DetectIntersection(Segment segment, Vector3[] vertices)
     {
@@ -229,21 +319,42 @@ public class ObjectMeshController : MonoBehaviour {
 
     void SetLineForm(Vector3[] vertices) //Gets an index and select the shape of the polygon from the class
     {
-       
 
+       
         line.positionCount = vertices.Length;
         line.SetPositions(vertices); //Generates the outline of the polygon with the given vertices
-       
+        GetComponent<MeshFilter>().mesh = GenerateMesh(vertices);
    
     }
    
 
-    void GenerateMesh() // Use the MeshGenerator Class in order to calculate the mesh given an array of vertices
+    Mesh GenerateMesh(Vector3[] vertex) // Use the MeshGenerator Class in order to calculate the mesh given an array of vertices
     {
-       // MeshGenerator meshGenerator = new MeshGenerator(form);
-       // meshGenerator.GenerateMesh();
-       // quadMesh.mesh = meshGenerator.GetMesh();
-       
+        // MeshGenerator meshGenerator = new MeshGenerator(form);
+        // meshGenerator.GenerateMesh();
+        // quadMesh.mesh = meshGenerator.GetMesh();
+        Vector2[] vertices2D = new Vector2[vertex.Length];
+        for(int i=0;i<vertex.Length;i++)
+        {
+            vertices2D[i] = new Vector2(vertex[i].x, vertex[i].y);
+        }
+        Triangulator tr = new Triangulator(vertices2D);
+        int[] indices = tr.Triangulate();
+
+        // Create the Vector3 vertices
+        Vector3[] vertices = new Vector3[vertices2D.Length];
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            vertices[i] = new Vector3(vertices2D[i].x, vertices2D[i].y, 0);
+        }
+
+        // Create the mesh
+        Mesh msh = new Mesh();
+        msh.vertices = vertices;
+        msh.triangles = indices;
+        msh.RecalculateNormals();
+        msh.RecalculateBounds();
+        return msh;
     }
 
 }

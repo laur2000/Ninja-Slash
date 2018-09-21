@@ -5,6 +5,8 @@ public class Segment
 {
     Vector3 segment; //A vector3 that stores A, B, C from a lineal equation Ax+By+C=0
     public Vector3 vertex1, vertex2; //Two vertices that limits the segment
+    public Vector3 vec1, vec2;
+    public Vector3 dir;
     public int index1, index2, index3, index4; //The index of the vertices
     public bool isSelected; //A boolean that check if this segment has already been intersected with other segment
     public Segment()
@@ -12,6 +14,8 @@ public class Segment
         segment = new Vector3();
         vertex1 = new Vector3(); 
         vertex2 = new Vector3();
+        vec1 = new Vector3();
+        vec2 = new Vector3();
         index1 = 0;
         index2 = 0;
         index3 = 0;
@@ -38,6 +42,7 @@ public class Segment
     public void SetSegment(Vector3 v1, Vector3 v2)
     {
         Vector3 aux = new Vector3();
+        dir = v2 - v1;
         
         if (v1.x > v2.x)
         {
@@ -53,11 +58,14 @@ public class Segment
     public void SetVertexOne(Vector3 vertex)
     {
         vertex1 = vertex;
+        vec1 = vertex;
     }
     public void SetVertexTwo(Vector3 vertex)
     {
         //This function sort the vertices from smaller to bigger
         vertex2 = vertex;
+        vec2 = vertex;
+        dir = vec2 - vec1;
         Vector3 aux = new Vector3();
         if (vertex1.x > vertex2.x)
         {
@@ -85,6 +93,11 @@ public class Segment
         
         index3 = ind3;
         index4 = ind4;
+    }
+    public float GetPendant()
+    {
+        float pendant = (-segment.x) / segment.y;
+        return pendant;
     }
 
 

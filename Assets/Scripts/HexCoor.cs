@@ -20,7 +20,7 @@ public class HexCoor{
                 {
                     corners = new Vector3[6];
                     
-                    corners[0] = new Vector3(outerRadius*2, 0, 0);
+                    corners[0] = new Vector3(0, 0, 0);
                     corners[1] = new Vector3(outerRadius * 0.5f, -innerRadius, 0);
                     corners[2] = new Vector3(-outerRadius * 0.5f, -innerRadius, 0);
                     corners[3] = new Vector3(-outerRadius, 0, 0);

@@ -206,7 +206,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!23 &1147403484
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -448,7 +448,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.15625
+        value: 0.0390625
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -487,10 +487,10 @@ LineRenderer:
       m_Mode: 0
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
-    numCornerVertices: 0
-    numCapVertices: 1
+    numCornerVertices: 2
+    numCapVertices: 2
     alignment: 1
-    textureMode: 0
+    textureMode: 2
     generateLightingData: 0
   m_UseWorldSpace: 1
   m_Loop: 1
@@ -506,7 +506,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   trail: {fileID: 1787937627}
-  quadMesh: {fileID: 1147403485}
 --- !u!1 &1787937625
 GameObject:
   m_ObjectHideFlags: 0
