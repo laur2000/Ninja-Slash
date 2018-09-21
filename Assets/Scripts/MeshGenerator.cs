@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MeshGenerator : MonoBehaviour {
+public class MeshGenerator  {
 
     /*
      * This Class will be in charge of generating the mesh of the object through vertex.

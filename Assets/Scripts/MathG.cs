@@ -102,7 +102,7 @@ public class Segment
 
 
 }
-public class MathG : MonoBehaviour {
+public class MathG{
 
 	public static Vector3 GetMiddlePoint(Vector3 v1, Vector3 v2) //Returns the vector of the middle point between two lines
     {

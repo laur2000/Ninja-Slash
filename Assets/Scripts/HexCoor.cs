@@ -44,6 +44,24 @@ public class HexCoor{
                  
                 }
                 break;
+            case 2:
+                {
+                    corners = new Vector3[10];
+
+                    corners[0] = new Vector3(0, 8.16f, 0);//J
+                    corners[1] = new Vector3(2, 2, 0);//C
+                    corners[2] = new Vector3(8.47f, 2, 0);//K
+                    corners[3] = new Vector3(3.24f, -1.8f, 0);//I
+                    corners[4] = new Vector3(5.31f, -8.16f, 0);//L
+                    corners[5] = new Vector3(0, -4.16f, 0);//H
+                    corners[6] = new Vector3(-5.31f, -8.16f, 0);//M
+                    corners[7] = new Vector3(-3.24f, -1.8f, 0);//G
+                    corners[8] = new Vector3(-8.47f, 2, 0);//N
+                    corners[9] = new Vector3(-2,2, 0);//B
+                   
+
+                }
+                break;
         }
     }
     public Vector3[] GetForm()

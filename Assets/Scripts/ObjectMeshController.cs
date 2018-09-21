@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ObjectMeshController : MonoBehaviour {
-
+    Polygon form;
     LineRenderer line;
-    Vector3[] form;
+    
     Segment segmentPlayer=new Segment();
     [SerializeField]
     Transform trail;
@@ -17,10 +17,11 @@ public class ObjectMeshController : MonoBehaviour {
     }
     private void Start()
     {
-        HexCoor formFunction = new HexCoor(0);
-        trail.gameObject.SetActive(false);
-        form = formFunction.GetForm(); //Stores the vertices of the polygon
        
+        HexCoor formFunction = new HexCoor(2);
+        trail.gameObject.SetActive(false);
+        form = new Polygon(formFunction.GetForm());//Stores the vertices of the polygon
+        GetComponent<MeshFilter>().mesh = GenerateMesh(form).GetMesh();
         SetLineForm(form);//Passes the form with the vertices to the Line Renderer
         //GenerateMesh();
         cam = Camera.main;
@@ -65,7 +66,7 @@ public class ObjectMeshController : MonoBehaviour {
 
 
                 
-                Vector3 intersection = DetectIntersection(segmentPlayer, form);
+                Vector3 intersection = DetectIntersection(segmentPlayer, form.GetVertices());
                 if (intersection != new Vector3() && (Mathf.Infinity!=segmentPlayer.Getfx(intersection.x) && Mathf.NegativeInfinity != segmentPlayer.Getfx(intersection.x)))
                 {
                     if(!segmentPlayer.isSelected)
@@ -106,9 +107,13 @@ public class ObjectMeshController : MonoBehaviour {
                         }
                         */
                         // Debug.Log("We have cut the segment " + segmentPlayer.index1 + segmentPlayer.index2 + " and the segment " + segmentPlayer.index3 + segmentPlayer.index4);
-                        form = RecalculateVerticesWithSegment(segmentPlayer, form);
-                        SetLineForm(form);
-                       
+                        List<Vector3[]> v = new List<Vector3[]>();
+                        v= RecalculateVerticesWithSegment(segmentPlayer, form.GetVertices());
+                        Polygon poly1 = new Polygon(v[0]);
+                        Polygon poly2 = new Polygon(v[1]);
+
+                        GenerateFallingObject(poly1,poly2);
+                        
                         isFinished = true;
 
                     }
@@ -138,15 +143,15 @@ public class ObjectMeshController : MonoBehaviour {
     }
 
     
-    private Vector3[] RecalculateVerticesWithSegment(Segment segment, Vector3[] vertices)
+    private List<Vector3[]> RecalculateVerticesWithSegment(Segment segment, Vector3[] vertices)
     {
         int longitud = 0;
-        ArrayList vertArray = new ArrayList();
+        List<Vector3[]> vertArray = new List<Vector3[]>();
 
         Vector3[] array1 = new Vector3[0], array2 = new Vector3[0];
         Vector3 dir = segment.dir;
-        Debug.Log(dir + " v1: " + segment.vertex1 + " v2: " + segment.vertex2);
-        Debug.Log("Vert1: " + segment.index1 + segment.index2 + " Vert2: " + segment.index3 + segment.index4);
+       // Debug.Log(dir + " v1: " + segment.vertex1 + " v2: " + segment.vertex2);
+       // Debug.Log("Vert1: " + segment.index1 + segment.index2 + " Vert2: " + segment.index3 + segment.index4);
        
             if (MathG.PointNotContainedInLine(segment.GetSegment(), vertices[0]) >= 0) //Check if the vertex[0] is at the left or at the right of the segment
             {
@@ -167,7 +172,9 @@ public class ObjectMeshController : MonoBehaviour {
 
                 if (dir.x >= 0)
                 {
-                    Debug.Log(" Pendiente positiva, 0 derecha, vector positivo: ");
+                  
+                 
+                 //   Debug.Log(" Pendiente positiva, 0 derecha, vector positivo: ");
                     array1 = new Vector3[longitud + 2];
                     array1[0] = segment.vec1;
                     array1[array1.Length - 1] = segment.vec2;
@@ -175,10 +182,38 @@ public class ObjectMeshController : MonoBehaviour {
                     {
                         array1[j] = vertices[i];
                     }
+
+                array2 = new Vector3[(vertices.Length - longitud) + 2];
+                array2[0] = segment.vec2;
+                array2[array2.Length - 1] = segment.vec1;
+                int h = 1;
+                for(int i=segment.index4; i<vertices.Length;)
+                {
+                    if (i == 0)
+                    {
+
+                        i = vertices.Length;
+
+                    }
+                    else
+                    {
+                        array2[h] = vertices[i];
+                        i++;
+                        h++;
+                    }
+                }
+                
+                for(int i=0;i<=segment.index1;)
+                {
+                    array2[h] = vertices[i];
+                    i++;
+                    h++;
+                }
+
                 }
                 else
                 {
-                    Debug.Log(" Pendiente positiva, 0 derecha, vector negativo: ");
+                    //Debug.Log(" Pendiente positiva, 0 derecha, vector negativo: ");
                     array1 = new Vector3[longitud + 2];
                     array1[0] = segment.vec2;
                     array1[array1.Length - 1] = segment.vec1;
@@ -186,7 +221,34 @@ public class ObjectMeshController : MonoBehaviour {
                     {
                         array1[j] = vertices[i];
                     }
+
+                array2 = new Vector3[(vertices.Length - longitud) + 2];
+                array2[0] = segment.vec1;
+                array2[array2.Length - 1] = segment.vec2;
+                int h = 1;
+                for (int i = segment.index2; i < vertices.Length;)
+                {
+                    if (i == 0)
+                    {
+
+                        i = vertices.Length;
+
+                    }
+                    else
+                    {
+                        array2[h] = vertices[i];
+                        i++;
+                        h++;
+                    }
                 }
+               
+                for (int i = 0; i <= segment.index3;)
+                {
+                    array2[h] = vertices[i];
+                    i++;
+                    h++;
+                }
+            }
 
 
 
@@ -210,7 +272,7 @@ public class ObjectMeshController : MonoBehaviour {
                 }
                 if (dir.x >= 0)
                 {
-                    Debug.Log(" Pendiente Positiva, 0 izquierda, vector positivo: ");
+                   // Debug.Log(" Pendiente Positiva, 0 izquierda, vector positivo: ");
                     array1 = new Vector3[longitud + 2];
                     array1[0] = segment.vec2;
                     array1[array1.Length - 1] = segment.vec1;
@@ -218,10 +280,36 @@ public class ObjectMeshController : MonoBehaviour {
                     {
                         array1[j] = vertices[i];
                     }
+                array2 = new Vector3[(vertices.Length - longitud) + 2];
+                array2[0] = segment.vec1;
+                array2[array2.Length - 1] = segment.vec2;
+                int h = 1;
+                for (int i = segment.index2; i < vertices.Length;)
+                {
+                    if (i == 0)
+                    {
+
+                        i = vertices.Length;
+
+                    }
+                    else
+                    {
+                        array2[h] = vertices[i];
+                        i++;
+                        h++;
+                    }
                 }
+                
+                for (int i = 0; i <= segment.index3;)
+                {
+                    array2[h] = vertices[i];
+                    i++;
+                    h++;
+                }
+            }
                 else
                 {
-                    Debug.Log(" Pendiente Positiva, 0 izquierda, vector negativo: ");
+                    //Debug.Log(" Pendiente Positiva, 0 izquierda, vector negativo: ");
                     array1 = new Vector3[longitud + 2];
                     array1[0] = segment.vec1;
                     array1[array1.Length - 1] = segment.vec2;
@@ -229,13 +317,46 @@ public class ObjectMeshController : MonoBehaviour {
                     {
                         array1[j] = vertices[i];
                     }
+
+                array2 = new Vector3[(vertices.Length - longitud) + 2];
+                array2[0] = segment.vec2;
+                array2[array2.Length - 1] = segment.vec1;
+                int h = 1;
+                for (int i = segment.index4; i < vertices.Length;)
+                {
+                    if (i == 0)
+                    {
+
+                        i = vertices.Length;
+
+                    }
+                    else
+                    {
+                        array2[h] = vertices[i];
+                        i++;
+                        h++;
+                    }
                 }
+               
+                for (int i = 0; i <= segment.index1;)
+                {
+                    array2[h] = vertices[i];
+                    i++;
+                    h++;
+                }
+
+
+
             }
-        
+            }
+
+        vertArray.Add(array1);
+        vertArray.Add(array2);
+
       
 
         //Debug.Log("Vertices: " + longitud);
-        return array1;
+        return vertArray;
     }
     private Vector3 DetectIntersection(Segment segment, Vector3[] vertices)
     {
@@ -316,29 +437,70 @@ public class ObjectMeshController : MonoBehaviour {
         GUILayout.Label("World position: " + point.ToString("F3"));
         GUILayout.EndArea();
     }
-
-    void SetLineForm(Vector3[] vertices) //Gets an index and select the shape of the polygon from the class
+    [SerializeField]
+    GameObject fallObject;
+    void SetLineForm(Polygon poly) //Gets an index and select the shape of the polygon from the class
     {
-
+        Vector3[] vertices = poly.GetVertices();
        
         line.positionCount = vertices.Length;
         line.SetPositions(vertices); //Generates the outline of the polygon with the given vertices
-        GetComponent<MeshFilter>().mesh = GenerateMesh(vertices);
+        
    
     }
-   
+   void GenerateFallingObject(Polygon poly1, Polygon poly2)
+    {
+        
+        poly1 = GenerateMesh(poly1);
+        poly2 = GenerateMesh(poly2);
 
-    Mesh GenerateMesh(Vector3[] vertex) // Use the MeshGenerator Class in order to calculate the mesh given an array of vertices
+        if(poly1.area>=poly2.area)
+        {
+            this.GetComponent<MeshFilter>().mesh = poly2.GetMesh();
+            form = poly2;
+            SetLineForm(poly2);
+
+            GameObject go = Instantiate(fallObject);
+            go.GetComponent<MeshFilter>().mesh = poly1.GetMesh();
+            AddForce(go, segmentPlayer.dir);
+          
+        }
+        else
+        {
+            this.GetComponent<MeshFilter>().mesh = poly1.GetMesh();
+            form = poly1;
+            SetLineForm(poly1);
+            GameObject go = Instantiate(fallObject);
+            go.GetComponent<MeshFilter>().mesh = poly2.GetMesh();
+            AddForce(go, segmentPlayer.dir);
+        }
+
+
+
+
+      
+
+    }
+    private void AddForce(GameObject go,Vector3 dir)
+    {
+        Rigidbody rb;
+        rb = go.GetComponent<Rigidbody>();
+        rb.AddForce(dir*100);
+    }
+    Polygon GenerateMesh(Polygon poly) // Use the MeshGenerator Class in order to calculate the mesh given an array of vertices
     {
         // MeshGenerator meshGenerator = new MeshGenerator(form);
         // meshGenerator.GenerateMesh();
         // quadMesh.mesh = meshGenerator.GetMesh();
+        Polygon polygon=poly;
+        Vector3[] vertex = polygon.GetVertices();
         Vector2[] vertices2D = new Vector2[vertex.Length];
         for(int i=0;i<vertex.Length;i++)
         {
             vertices2D[i] = new Vector2(vertex[i].x, vertex[i].y);
         }
         Triangulator tr = new Triangulator(vertices2D);
+        
         int[] indices = tr.Triangulate();
 
         // Create the Vector3 vertices
@@ -347,14 +509,16 @@ public class ObjectMeshController : MonoBehaviour {
         {
             vertices[i] = new Vector3(vertices2D[i].x, vertices2D[i].y, 0);
         }
-
+        
         // Create the mesh
         Mesh msh = new Mesh();
         msh.vertices = vertices;
         msh.triangles = indices;
         msh.RecalculateNormals();
         msh.RecalculateBounds();
-        return msh;
+        polygon.SetMesh(msh);
+        polygon.area = tr.Area();
+        return poly;
     }
 
 }
