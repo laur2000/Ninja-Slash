@@ -9,7 +9,7 @@ public class ObjectMeshController : MonoBehaviour {
     Segment segmentPlayer=new Segment();
     [SerializeField]
     Transform trail;
-    bool firstIntersection = true;
+
     private void Awake()
     {
         line = GetComponent<LineRenderer>();
@@ -36,12 +36,13 @@ public class ObjectMeshController : MonoBehaviour {
     private Camera cam;
     Vector3 vertexButtonOne = new Vector3(), vertexButtonTwo = new Vector3();
     bool isFinished = false;
-   
+    float timeManage;
     private void OnPlayerMouseDown()
     {
         if (Input.GetMouseButtonUp(0))
         {
             trail.gameObject.SetActive(false);
+            
            
         }
         if (Input.GetMouseButtonDown(0))
@@ -52,6 +53,7 @@ public class ObjectMeshController : MonoBehaviour {
             vertexButtonTwo = vertexButtonOne;
             trail.transform.position = vertexButtonOne;
             trail.gameObject.SetActive(true);
+            
         }
         
         if(Input.GetMouseButton(0))
@@ -107,13 +109,15 @@ public class ObjectMeshController : MonoBehaviour {
                         }
                         */
                         // Debug.Log("We have cut the segment " + segmentPlayer.index1 + segmentPlayer.index2 + " and the segment " + segmentPlayer.index3 + segmentPlayer.index4);
-                        List<Vector3[]> v = new List<Vector3[]>();
-                        v= RecalculateVerticesWithSegment(segmentPlayer, form.GetVertices());
-                        Polygon poly1 = new Polygon(v[0]);
-                        Polygon poly2 = new Polygon(v[1]);
+                        if (IsInsidePolygon(MathG.GetMiddlePoint(segmentPlayer.vec1, segmentPlayer.vec2), form))
+                        {
+                            List<Vector3[]> v = new List<Vector3[]>();
+                            v = RecalculateVerticesWithSegment(segmentPlayer, form.GetVertices());
+                            Polygon poly1 = new Polygon(v[0]);
+                            Polygon poly2 = new Polygon(v[1]);
 
-                        GenerateFallingObject(poly1,poly2);
-                        
+                            GenerateFallingObject(poly1, poly2);
+                        }
                         isFinished = true;
 
                     }
@@ -349,7 +353,7 @@ public class ObjectMeshController : MonoBehaviour {
 
             }
             }
-
+        
         vertArray.Add(array1);
         vertArray.Add(array2);
 
@@ -453,29 +457,31 @@ public class ObjectMeshController : MonoBehaviour {
         
         poly1 = GenerateMesh(poly1);
         poly2 = GenerateMesh(poly2);
+        
+            if (poly1.area >= poly2.area)
+            {
+                this.GetComponent<MeshFilter>().mesh = poly2.GetMesh();
+                form = poly2;
+                SetLineForm(poly2);
 
-        if(poly1.area>=poly2.area)
-        {
-            this.GetComponent<MeshFilter>().mesh = poly2.GetMesh();
-            form = poly2;
-            SetLineForm(poly2);
+                GameObject go = Instantiate(fallObject);
+                go.GetComponent<MeshFilter>().mesh = poly1.GetMesh();
+                AddForce(go, segmentPlayer.dir);
+                Destroy(go, 5);
 
-            GameObject go = Instantiate(fallObject);
-            go.GetComponent<MeshFilter>().mesh = poly1.GetMesh();
-            AddForce(go, segmentPlayer.dir);
-          
-        }
-        else
-        {
-            this.GetComponent<MeshFilter>().mesh = poly1.GetMesh();
-            form = poly1;
-            SetLineForm(poly1);
-            GameObject go = Instantiate(fallObject);
-            go.GetComponent<MeshFilter>().mesh = poly2.GetMesh();
-            AddForce(go, segmentPlayer.dir);
-        }
+            }
+            else
+            {
+                this.GetComponent<MeshFilter>().mesh = poly1.GetMesh();
+                form = poly1;
+                SetLineForm(poly1);
+                GameObject go = Instantiate(fallObject);
+                go.GetComponent<MeshFilter>().mesh = poly2.GetMesh();
+                AddForce(go, segmentPlayer.dir);
+                Destroy(go, 5);
+            }
 
-
+        
 
 
       
@@ -487,38 +493,62 @@ public class ObjectMeshController : MonoBehaviour {
         rb = go.GetComponent<Rigidbody>();
         rb.AddForce(dir*100);
     }
+    
     Polygon GenerateMesh(Polygon poly) // Use the MeshGenerator Class in order to calculate the mesh given an array of vertices
     {
         // MeshGenerator meshGenerator = new MeshGenerator(form);
         // meshGenerator.GenerateMesh();
         // quadMesh.mesh = meshGenerator.GetMesh();
-        Polygon polygon=poly;
-        Vector3[] vertex = polygon.GetVertices();
+        
+        Vector3[] vertex = poly.GetVertices();
         Vector2[] vertices2D = new Vector2[vertex.Length];
         for(int i=0;i<vertex.Length;i++)
         {
             vertices2D[i] = new Vector2(vertex[i].x, vertex[i].y);
+            
+            //Debug.Log(vertices2D[i]+" "+i);
         }
         Triangulator tr = new Triangulator(vertices2D);
-        
+      
         int[] indices = tr.Triangulate();
-
+        
         // Create the Vector3 vertices
         Vector3[] vertices = new Vector3[vertices2D.Length];
         for (int i = 0; i < vertices.Length; i++)
         {
             vertices[i] = new Vector3(vertices2D[i].x, vertices2D[i].y, 0);
+            //Debug.Log(vertices[i]+" "+i);
         }
+       
+        
+     
+      
+        poly.SetIndices(indices);
+        poly.SetVertices(vertices);
+      
         
         // Create the mesh
         Mesh msh = new Mesh();
-        msh.vertices = vertices;
-        msh.triangles = indices;
-        msh.RecalculateNormals();
-        msh.RecalculateBounds();
-        polygon.SetMesh(msh);
-        polygon.area = tr.Area();
+        
+            msh.vertices = vertices;
+            msh.triangles = indices;
+            msh.RecalculateNormals();
+            msh.RecalculateBounds();
+            poly.SetMesh(msh);
+            poly.area = tr.Area();
+        
         return poly;
     }
-
+    bool IsInsidePolygon(Vector3 point, Polygon poly)
+    {
+        bool isInside = false;
+        int[] indices = poly.GetIndices();
+        Vector3[] vertices = poly.GetVertices();
+        for (int i = 0; i < indices.Length && !isInside; i += 3)
+        {
+            //Debug.Log(vertices2D[indices[i]]+" "+indices[i]+" "+ vertices2D[indices[i+1]] + " " + indices[i+1] +" "+ vertices2D[indices[i+2]] + " " + indices[i+2]);
+            isInside = MathG.Trilateration(vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]], point);
+        }
+        return isInside;
+    }
 }

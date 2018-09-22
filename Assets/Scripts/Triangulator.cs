@@ -76,8 +76,10 @@ public class Triangulator
         {
             Vector2 pval = m_points[p];
             Vector2 qval = m_points[q];
+            //Debug.Log("Index "+p+ " "+m_points[p] + " and " + "Index " +q+ m_points[q]);
             A += pval.x * qval.y - qval.x * pval.y;
         }
+       
         return (A * 0.5f);
     }
 
@@ -100,7 +102,7 @@ public class Triangulator
         return true;
     }
 
-    private bool InsideTriangle(Vector2 A, Vector2 B, Vector2 C, Vector2 P)
+    public bool InsideTriangle(Vector2 A, Vector2 B, Vector2 C, Vector2 P)
     {
         float ax, ay, bx, by, cx, cy, apx, apy, bpx, bpy, cpx, cpy;
         float cCROSSap, bCROSScp, aCROSSbp;

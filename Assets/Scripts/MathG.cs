@@ -211,5 +211,29 @@ public class MathG{
         }
         return isContained;
     }
+    public static bool Trilateration(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 Point)
+    {
+        bool isInside = false;
 
+        Vector3 line1 = new Vector3();
+        Vector3 line2 = new Vector3();
+        Vector3 line3 = new Vector3();
+
+        float d1 = 0;
+        float d2 = 0;
+        float d3 = 0;
+
+        line1 = GetLineEquation(v2 - v1, v1);
+        line2 = GetLineEquation(v3 - v2, v2);
+        line3 = GetLineEquation(v1 - v3, v3);
+        d1 = PointNotContainedInLine(line1, Point);
+        d2 = PointNotContainedInLine(line2, Point);
+        d3 = PointNotContainedInLine(line3, Point);
+
+        if(d1 >= 0 && d2 >= 0 && d3 >= 0 )
+        {
+            isInside = true;
+        }
+        return isInside;
+    }
 }
