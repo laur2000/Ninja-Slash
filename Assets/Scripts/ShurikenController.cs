@@ -10,7 +10,7 @@ public class Shuriken
     public bool isDirectionCalculated;
    
    public GameObject shurikenGO;
-    float velocity = 1f;
+    float velocity = 2f;
     float initialPos;
     float passTime;
     public Shuriken()
@@ -74,8 +74,9 @@ public class Shuriken
             {
                 initialPos = intersection.x;
                 PingPong();
+                isDirectionCalculated = false;
             }
-            isDirectionCalculated = false;
+            
         }
        else
         {
@@ -84,21 +85,23 @@ public class Shuriken
             {
                 initialPos = intersection.x;
                 PingPong();
+                isDirectionCalculated = false;
             }
-            isDirectionCalculated = false;
+           
         }
 
     }
     private void PingPong()
     {
-        Debug.Log(" direction: "+shurLine.dir);
+      //  Debug.Log(" direction: "+shurLine.dir);
         Vector3 normal = Vector3.Reflect(shurLine.dir, MathG.GetNormal(lastSegment.dir));
-        Debug.Log("Normal "+normal);
+       // Debug.Log("Normal "+normal);
       //Debug.Log("Segment dir " + lastSegment.dir + " normal: " + MathG.GetNormal(lastSegment.dir));
         shurLine = new Segment();
-        Debug.Log("Intersection " + intersection + " second inter " + (normal + intersection));
-        shurLine.SetSegment(intersection,(normal+intersection)*10);
-        Debug.Log("second dir: " + shurLine.dir);
+       // Debug.Log("Intersection " + intersection + " second inter " + (normal + intersection));
+        shurLine.SetSegment(intersection,normal*10+intersection);
+       
+      //  Debug.Log(shurLine.GetSegment());
         passTime = 0;
     }
     public void SetIntersection(Vector3 inter)
@@ -154,6 +157,7 @@ public class ShurikenController : MonoBehaviour {
            
             if (!shur.isDirectionCalculated)
             {
+
                 IntersectionObjectWithSide(shur);
                 shur.isDirectionCalculated = true;
             }
@@ -169,12 +173,14 @@ public class ShurikenController : MonoBehaviour {
         bool finished = false;
         Vector3 intersection = new Vector3();
         polySegments = poly.GetSegments();
+      
          for(int i=0;i<polySegments.Length && !finished;i++)
             {
                 intersection = MathG.IntersectionTwoSegments(shur.GetSegment(), polySegments[i]);
+          
                 if(intersection!=new Vector3() && shur.GetLastSegment()!=polySegments[i])
                 {
-               
+                Debug.Log(intersection);
                 shur.SetIntersection(intersection);
                 shur.SetLastSegment(polySegments[i]);
                 Instantiate(MathG.CreateSphere(intersection));
