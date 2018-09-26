@@ -22,7 +22,7 @@ public class Segment
         index4 = 0;
         isSelected = false;
     }
-
+   
     public Segment(Vector3 line, int indexOne, int IndexTwo)
     {
         segment = line;
@@ -43,7 +43,7 @@ public class Segment
     {
         Vector3 aux = new Vector3();
         dir = v2 - v1;
-        
+        dir.Normalize();
         if (v1.x > v2.x)
         {
             aux = v2;
@@ -160,6 +160,22 @@ public class MathG{
        
         return new Vector3();
     }
+    public static Vector3 GetNormal(Vector3 dir)
+    {
+        Vector3 normal= new Vector3();
+     
+        normal = new Vector3(dir.y,-dir.x,0);
+        return normal;
+    }
+    public static GameObject CreateSphere(Vector3 Position)
+    {
+
+        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+
+        go.transform.position = Position;
+        return go;
+    }
     public static float CalculateMatrix(Vector3 line1,Vector3 line2)
     {
         //Uses the general method of calculating the matrix
@@ -170,18 +186,14 @@ public class MathG{
     public static float PointNotContainedInLine(Vector3 line,Vector3 Point)
     {
         float error = line.x * Point.x + line.y * Point.y + line.z;
-        /*if((-line.x)/line.y<0)
-        {
-            error = -error;
-        }
-        */
+      
         return error;
     }
     public static bool LineContains(Vector3 line,Vector3 Point) 
     {
         //Function that calculates if a point is aproximately contained in a line
         bool isContained = false;
-        if((line.x*Point.x+line.y*Point.y+line.z)>-0.2f && (line.x * Point.x + line.y * Point.y + line.z)< 0.2f)
+        if((line.x*Point.x+line.y*Point.y+line.z)>-0.1f && (line.x * Point.x + line.y * Point.y + line.z)< 0.1f)
         {
             isContained = true;
         }

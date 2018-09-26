@@ -9,7 +9,10 @@ public class ObjectMeshController : MonoBehaviour {
     Segment segmentPlayer=new Segment();
     [SerializeField]
     Transform trail;
-
+    public Polygon GetPoly()
+    {
+        return form;
+    }
     private void Awake()
     {
         line = GetComponent<LineRenderer>();
@@ -23,6 +26,7 @@ public class ObjectMeshController : MonoBehaviour {
         form = new Polygon(formFunction.GetForm());//Stores the vertices of the polygon
         GetComponent<MeshFilter>().mesh = GenerateMesh(form).GetMesh();
         SetLineForm(form);//Passes the form with the vertices to the Line Renderer
+        ShurikenController.poly = form;
         //GenerateMesh();
         cam = Camera.main;
     }
@@ -36,7 +40,7 @@ public class ObjectMeshController : MonoBehaviour {
     private Camera cam;
     Vector3 vertexButtonOne = new Vector3(), vertexButtonTwo = new Vector3();
     bool isFinished = false;
-    float timeManage;
+    
     private void OnPlayerMouseDown()
     {
         if (Input.GetMouseButtonUp(0))
@@ -65,8 +69,6 @@ public class ObjectMeshController : MonoBehaviour {
                 
                 segmentPlayer.SetSegment(vertexButtonOne,vertexButtonTwo );
 
-
-
                 
                 Vector3 intersection = DetectIntersection(segmentPlayer, form.GetVertices());
                 if (intersection != new Vector3() && (Mathf.Infinity!=segmentPlayer.Getfx(intersection.x) && Mathf.NegativeInfinity != segmentPlayer.Getfx(intersection.x)))
@@ -83,15 +85,13 @@ public class ObjectMeshController : MonoBehaviour {
                         segmentPlayer.SetSegment(segmentPlayer.vertex1, segmentPlayer.vertex2);
                         segmentPlayer.SetVertexTwo(intersection);
 
-                    }
-                    
+                    }                    
                     // Debug.Log(intersection + " with segments " + segmentPlayer.index1 + " and " + segmentPlayer.index2);
                     // This is the representation of the player segment, use of Debug purpose
                     // Debug.Log("The player segment has touched the segment at " + intersection + " of the " + segmentPlayer.index1 + " " + segmentPlayer.index2 + " segment");                
 
                     segmentPlayer.isSelected = !segmentPlayer.isSelected; //Mark this segment as selected to exit the loop
-                    if (!segmentPlayer.isSelected)
-                    {
+                    if (!segmentPlayer.isSelected)                    {
                         /*
                          * This draw the line of the segment cut. Use for debug purpose
                         for (float x = -3; x < 3; x += 0.1f)
@@ -109,7 +109,9 @@ public class ObjectMeshController : MonoBehaviour {
                         }
                         */
                         // Debug.Log("We have cut the segment " + segmentPlayer.index1 + segmentPlayer.index2 + " and the segment " + segmentPlayer.index3 + segmentPlayer.index4);
-                        if (IsInsidePolygon(MathG.GetMiddlePoint(segmentPlayer.vec1, segmentPlayer.vec2), form))
+
+
+                        if (IsInsidePolygon(MathG.GetMiddlePoint(segmentPlayer.vec1, segmentPlayer.vec2), form)) //Checks if the segment cuts the figure from inside or outside
                         {
                             List<Vector3[]> v = new List<Vector3[]>();
                             v = RecalculateVerticesWithSegment(segmentPlayer, form.GetVertices());
