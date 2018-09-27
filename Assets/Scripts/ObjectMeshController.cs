@@ -21,13 +21,14 @@ public class ObjectMeshController : MonoBehaviour {
     private void Start()
     {
        
-        HexCoor formFunction = new HexCoor(2);
+        HexCoor formFunction = new HexCoor(0);
         trail.gameObject.SetActive(false);
         form = new Polygon(formFunction.GetForm());//Stores the vertices of the polygon
         GetComponent<MeshFilter>().mesh = GenerateMesh(form).GetMesh();
         SetLineForm(form);//Passes the form with the vertices to the Line Renderer
         ShurikenController.poly = form;
         //GenerateMesh();
+       
         cam = Camera.main;
     }
     private void Update()
@@ -483,7 +484,7 @@ public class ObjectMeshController : MonoBehaviour {
                 Destroy(go, 5);
             }
 
-        
+        ShurikenController.poly = form;
 
 
       

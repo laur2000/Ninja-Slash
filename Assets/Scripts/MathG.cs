@@ -74,7 +74,13 @@ public class Segment
             vertex1 = aux;
         }
     }
-
+    public float GetLenght()
+    {
+        float lenght;
+        Vector3 direction = vertex2 - vertex1;
+        lenght = direction.magnitude;
+        return lenght;
+    }
     public float Getfx(float x)
     {
         //This is the f(x) form of the equation
@@ -160,6 +166,7 @@ public class MathG{
        
         return new Vector3();
     }
+  
     public static Vector3 GetNormal(Vector3 dir)
     {
         Vector3 normal= new Vector3();

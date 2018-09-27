@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 public class Shuriken
 {
     Segment shurLine;
@@ -36,6 +37,7 @@ public class Shuriken
     {
         return shurLine;
     }
+    
     private void CalculatePosition()
     {
         passTime += Time.deltaTime;
@@ -54,6 +56,7 @@ public class Shuriken
         position = new Vector3(x, y, 0);
         shurikenGO.transform.position = position;
     }
+    
     public void SetLastSegment(Segment segment)
     {
         lastSegment = segment;
@@ -64,8 +67,8 @@ public class Shuriken
     }
     public void MoveShuriken()
     {
+
         CalculatePosition();
-        
         //Debug.Log("Position " + position + " Intersection: " + intersection);
        if(shurLine.dir.x>=0)
         {
@@ -99,8 +102,8 @@ public class Shuriken
       //Debug.Log("Segment dir " + lastSegment.dir + " normal: " + MathG.GetNormal(lastSegment.dir));
         shurLine = new Segment();
        // Debug.Log("Intersection " + intersection + " second inter " + (normal + intersection));
-        shurLine.SetSegment(intersection,normal*10+intersection);
-       
+        shurLine.SetSegment(intersection,normal*20+intersection);
+       // Debug.Log(normal * 20 + intersection);
       //  Debug.Log(shurLine.GetSegment());
         passTime = 0;
     }
@@ -162,6 +165,7 @@ public class ShurikenController : MonoBehaviour {
                 shur.isDirectionCalculated = true;
             }
             shur.shurikenGO.GetComponentInChildren<Transform>().transform.Rotate(0, -12 * Time.deltaTime * 20, 0);
+           
             shur.MoveShuriken();
 
         }
@@ -170,24 +174,35 @@ public class ShurikenController : MonoBehaviour {
     void IntersectionObjectWithSide(Shuriken shur)
     {
         Segment[] polySegments;
-        bool finished = false;
+        
         Vector3 intersection = new Vector3();
+        Vector3 inter = new Vector3();
         polySegments = poly.GetSegments();
-      
-         for(int i=0;i<polySegments.Length && !finished;i++)
+        float distance = polySegments[0].GetLenght();
+        int index = 0;
+        for (int i=0;i<polySegments.Length;i++)
             {
                 intersection = MathG.IntersectionTwoSegments(shur.GetSegment(), polySegments[i]);
-          
-                if(intersection!=new Vector3() && shur.GetLastSegment()!=polySegments[i])
+
+            if (intersection!=new Vector3() && shur.GetLastSegment()!=polySegments[i])
                 {
-                Debug.Log(intersection);
-                shur.SetIntersection(intersection);
-                shur.SetLastSegment(polySegments[i]);
-                Instantiate(MathG.CreateSphere(intersection));
-                finished = true;
+                if(polySegments[i].GetLenght()<=distance)
+                {
+                    distance = polySegments[i].GetLenght();
+                    index = i;
+                    inter = intersection;
+                }
+               
+                
 
                 }
             }
-        
+        if (inter != new Vector3())
+        {
+
+            shur.SetIntersection(inter);
+            shur.SetLastSegment(polySegments[index]);
+            Instantiate(MathG.CreateSphere(inter));
+        }
     }
 }
